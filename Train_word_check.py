@@ -30,17 +30,20 @@ logger.addHandler(ch)
 #
 ######################################################
 datasets = {
-    'unidep_pos':  # Name of the dataset
-        {'columns': {1: 'tokens', 3: 'POS'},
+    'word_check':  # Name of the dataset
+        {'columns': {1: 'tokens', 2: 'tag'},
          # CoNLL format for the input data. Column 1 contains tokens, column 3 contains POS information
-         'label': 'POS',  # Which column we like to predict
+         # A : 正确
+         # B : 同音错误
+         # C : 形近字错误
+         'label': 'tag',
          'evaluate': True,  # Should we evaluate on this task? Set true always for single task setups
          'commentSymbol': None}
     # Lines in the input data starting with this string will be skipped. Can be used to skip comments
 }
 
 # :: Path on your computer to the word embeddings. Embeddings by Komninos et al. will be downloaded automatically ::
-embeddingsPath = 'komninos_english_embeddings.gz'
+embeddingsPath = 'sgns.sogou.char'
 
 # :: Prepares the dataset to be used with the LSTM-network. Creates and stores cPickle files in the pkl/ folder ::
 pickleFile = perpareDataset(embeddingsPath, datasets)
@@ -61,6 +64,6 @@ params = {'classifier': ['CRF'], 'LSTM-Size': [100], 'dropout': (0.25, 0.25)}
 model = BiLSTM(params)
 model.setMappings(mappings, embeddings)
 model.setDataset(datasets, data)
-model.storeResults('results/unidep_pos_results.csv')  # Path to store performance scores for dev / test
+model.storeResults('results/word_check_results.csv')  # Path to store performance scores for dev / test
 model.modelSavePath = "models/[ModelName]_[DevScore]_[TestScore]_[Epoch].h5"  # Path to store models
 model.fit(epochs=25)
