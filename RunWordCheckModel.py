@@ -11,7 +11,7 @@ from neuralnets.BiLSTM import BiLSTM
 import sys
 
 if len(sys.argv) < 3:
-    print("Usage: python RunModel.py modelPath inputPath")
+    print("Usage: python RunWordCheckModel.py modelPath inputPath")
     exit()
 
 modelPath = sys.argv[1]
