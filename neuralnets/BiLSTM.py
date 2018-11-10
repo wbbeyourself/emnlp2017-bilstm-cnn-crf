@@ -561,9 +561,9 @@ class BiLSTM:
         assert len(label_pred) == len(label_correct)
         pre, rec, f1 = BIOF1Validation.compute_f1_token_basis(label_pred, label_correct, 'A')
 
-        # 对于'A'类别的f1值
-        A_pre, A_rec, A_f1 = BIOF1Validation.compute_f1_of_token(label_pred, label_correct, 'A')
-        logging.info("label A: Prec: %.3f, Rec: %.3f, F1: %.4f" % (A_pre, A_rec, A_f1))
+        # 对于'A'类别的f1值, 太浪费时间了，不计算A的F1了
+        # A_pre, A_rec, A_f1 = BIOF1Validation.compute_f1_of_token(label_pred, label_correct, 'A')
+        # logging.info("label A: Prec: %.3f, Rec: %.3f, F1: %.4f" % (A_pre, A_rec, A_f1))
 
         return pre, rec, f1
 
