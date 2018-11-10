@@ -1,3 +1,4 @@
+# coding = utf-8
 # This script trains the BiLSTM-CRF architecture for part-of-speech tagging using
 # the universal dependency dataset (http://universaldependencies.org/).
 # The code use the embeddings by Komninos et al. (https://www.cs.york.ac.uk/nlp/extvec/)

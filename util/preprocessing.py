@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import (division, absolute_import, print_function, unicode_literals)
 import os
 import numpy as np
@@ -28,8 +29,8 @@ def perpareDataset(embeddingsPath, datasets, frequencyThresholdUnknownTokens=50,
     # Arguments:
         embeddingsPath: Full path to the pre-trained embeddings file. File must be in text format.
         datasetFiles: Full path to the [train,dev,test]-file
-        frequencyThresholdUnknownTokens: Unknown words are added, if they occure more than frequencyThresholdUnknownTokens times in the train set
-        reducePretrainedEmbeddings: Set to true, then only the embeddings needed for training will be loaded
+        frequencyThresholdUnknownTokens: 对于预训练词向量外的词，只要出现次数超过frequencyThresholdUnknownTokens，就加入embedding里面
+        reducePretrainedEmbeddings: Set to true, 那么只有需要的embedding才会被加载，其他的域外词直接丢弃
         valTransformations: Column specific value transformations
         padOneTokenSentence: True to pad one sentence tokens (needed for CRF classifier)
     """
@@ -41,7 +42,9 @@ def perpareDataset(embeddingsPath, datasets, frequencyThresholdUnknownTokens=50,
         logging.info("Using existent pickle file: %s" % outputPath)
         return outputPath
 
+    # 获取特殊字符的word2Idx： 比如'PADDING', 'other', 'numeric', 'mainly_numeric', 'allLower'
     casing2Idx = getCasingVocab()
+    # 很纯粹，embedddings就是一个lookup表，word2Idx就是索引
     embeddings, word2Idx = readEmbeddings(embeddingsPath, datasets, frequencyThresholdUnknownTokens,
                                           reducePretrainedEmbeddings)
 
@@ -58,6 +61,7 @@ def perpareDataset(embeddingsPath, datasets, frequencyThresholdUnknownTokens=50,
         paths = [trainData, devData, testData]
 
         logging.info(":: Transform " + datasetName + " dataset ::")
+        # pklObjects['data'] 就是一个dict, {'word_check': {'trainMatrix': .., 'devMatrix': .., 'testMatrix': ..}}
         pklObjects['data'][datasetName] = createPklFiles(paths, mappings, datasetColumns, commentSymbol,
                                                          valTransformations, padOneTokenSentence)
 
@@ -82,11 +86,10 @@ def loadDatasetPickle(embeddingsPickle):
 def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens, reducePretrainedEmbeddings):
     """
     Reads the embeddingsPath.
-    :param embeddingsPath: File path to pretrained embeddings
-    :param datasetName:
-    :param datasetFiles:
+    :param embeddingsPath: 预训练词向量
+    :param datasetFiles: 数据集dict相关
     :param frequencyThresholdUnknownTokens:
-    :param reducePretrainedEmbeddings:
+    :param reducePretrainedEmbeddings:如果为True，则只加载dataset和预训练词向量的交集部分；反之，加载整个预训练词向量
     :return:
     """
     # Check that the embeddings file exists
@@ -162,6 +165,8 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
 
         vector = np.array([float(num) for num in split[1:]])
 
+        # 如果原来dict为空，往里面塞
+        # 或者当前的word是dataset里面出现过的，也往里面塞
         if len(neededVocab) == 0 or word in neededVocab:
             if word not in word2Idx:
                 embeddings.append(vector)
@@ -212,6 +217,8 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
     return embeddings, word2Idx
 
 
+# 在原来的token, label, 基础上又加入拆分后的 characters，针对英文单词，或者其他多字符的word
+# todo: 可以做成拆分词组的
 def addCharInformation(sentences):
     """Breaks every token into the characters"""
     for sentenceIdx in range(len(sentences)):
@@ -222,6 +229,7 @@ def addCharInformation(sentences):
             sentences[sentenceIdx]['characters'].append(chars)
 
 
+# 加casing, 也能提供额外的信息
 def addCasingInformation(sentences):
     """Adds information of the casing of words"""
     for sentenceIdx in range(len(sentences)):
@@ -331,12 +339,15 @@ def createPklFiles(datasetFiles, mappings, cols, commentSymbol, valTransformatio
     devSentences = readCoNLL(datasetFiles[1], cols, commentSymbol, valTransformation)
     testSentences = readCoNLL(datasetFiles[2], cols, commentSymbol, valTransformation)
 
+    # 将其他列的token也扩充进来
     extendMappings(mappings, trainSentences + devSentences + testSentences)
 
     charset = {"PADDING": 0, "UNKNOWN": 1}
     for c in " 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.,-_()[]{}!?:;#'\"/\\%$`&=*+@^~|":
         charset[c] = len(charset)
     mappings['characters'] = charset
+
+    # 直到现在，mappings已经变为：{'characters': .., 'casing': ..., 'tokens': ...}
 
     addCharInformation(trainSentences)
     addCasingInformation(trainSentences)
