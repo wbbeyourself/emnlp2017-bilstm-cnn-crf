@@ -37,7 +37,7 @@ class BiLSTM:
                          'charEmbeddings': None, 'charEmbeddingsSize': 30, 'charFilterSize': 30, 'charFilterLength': 3,
                          'charLSTMSize': 25, 'maxCharLength': 25,
                          'useTaskIdentifier': False, 'clipvalue': 0, 'clipnorm': 1,
-                         'earlyStopping': 5, 'miniBatchSize': 32,
+                         'earlyStopping': 5, 'miniBatchSize': 5000,
                          'featureNames': ['tokens', 'casing'], 'addFeatureDimensions': 10}
         if params != None:
             defaultParams.update(params)
