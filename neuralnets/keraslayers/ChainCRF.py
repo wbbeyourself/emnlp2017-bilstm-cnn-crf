@@ -13,6 +13,7 @@ from keras import constraints
 from keras import initializers
 from keras.engine import Layer, InputSpec
 
+
 def path_energy(y, x, U, b_start=None, b_end=None, mask=None):
     '''Calculates the energy of a tag path y for a given input x (with mask),
     transition energies U and boundary energies b_start, b_end.'''
@@ -260,6 +261,7 @@ class ChainCRF(Layer):
     that sample weighting in temporal mode.
 
     '''
+
     def __init__(self, init='glorot_uniform',
                  U_regularizer=None,
                  b_start_regularizer=None,
@@ -295,8 +297,7 @@ class ChainCRF(Layer):
 
     def _fetch_mask(self):
         mask = None
-        
-        
+
         if self._inbound_nodes:
             mask = self._inbound_nodes[0].input_masks[0]
 
@@ -316,13 +317,13 @@ class ChainCRF(Layer):
                                  regularizer=self.U_regularizer,
                                  constraint=self.U_constraint)
 
-        self.b_start = self.add_weight((n_classes, ),
+        self.b_start = self.add_weight((n_classes,),
                                        initializer='zero',
                                        name='b_start',
                                        regularizer=self.b_start_regularizer,
                                        constraint=self.b_start_constraint)
 
-        self.b_end = self.add_weight((n_classes, ),
+        self.b_end = self.add_weight((n_classes,),
                                      initializer='zero',
                                      name='b_end',
                                      regularizer=self.b_end_regularizer,
@@ -346,11 +347,13 @@ class ChainCRF(Layer):
         mask = self._fetch_mask()
         return chain_crf_loss(y_true, y_pred, self.U, self.b_start, self.b_end, mask)
 
+    # 优化一下，使用 weighted softmax loss
     def sparse_loss(self, y_true, y_pred):
         '''Linear Chain Conditional Random Field loss function with sparse
         tag sequences.
         '''
         y_true = K.cast(y_true, 'int32')
+        # 将第1维的维度去掉
         y_true = K.squeeze(y_true, 2)
         mask = self._fetch_mask()
         return sparse_chain_crf_loss(y_true, y_pred, self.U, self.b_start, self.b_end, mask)
@@ -386,4 +389,5 @@ def create_custom_objects():
         method = getattr(instanceHolder['instance'], 'sparse_loss')
         return method(*args)
 
-    return {'ChainCRF': ChainCRFClassWrapper, 'ChainCRFClassWrapper': ChainCRFClassWrapper, 'loss': loss, 'sparse_loss': sparse_loss}
+    return {'ChainCRF': ChainCRFClassWrapper, 'ChainCRFClassWrapper': ChainCRFClassWrapper, 'loss': loss,
+            'sparse_loss': sparse_loss}

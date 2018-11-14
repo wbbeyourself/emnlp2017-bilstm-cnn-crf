@@ -23,6 +23,8 @@ def conllWrite(outputPath, sentences, headers):
 
 
 def readCoNLL(inputPath, cols, commentSymbol=None, valTransformation=None):
+    # todo: 改为yeield!! 每次出yigetuple, [('精', 'A'), ('神', 'A'), ...]
+    # 或者yield 一个batch
     """
     Reads in a CoNLL file
     返回一个list, 每个元素如：{'token': [...], 'tag': [...]}
@@ -35,7 +37,7 @@ def readCoNLL(inputPath, cols, commentSymbol=None, valTransformation=None):
 
     newData = False
 
-    for line in open(inputPath):
+    for line in open(inputPath, encoding='utf-8'):
         line = line.strip()
         if len(line) == 0 or (commentSymbol != None and line.startswith(commentSymbol)):
             if newData:

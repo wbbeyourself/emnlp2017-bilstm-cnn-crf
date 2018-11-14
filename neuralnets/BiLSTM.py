@@ -373,10 +373,21 @@ class BiLSTM:
         else:
             self.resultsSavePath = None
 
+    def time_cost(self, start, end, log=False):
+        cost = int(end - start)
+        h = cost // 3600
+        m = (cost % 3600) // 60
+        if log:
+            print('cost : %s hours %s mins' % (h, m))
+
+        mins = cost // 60
+        return mins
+
     def fit(self, epochs):
         if self.models is None:
             self.buildModel()
 
+        t0 = time.time()
         total_train_time = 0
         max_dev_score = {modelName: 0 for modelName in self.models.keys()}
         max_test_score = {modelName: 0 for modelName in self.models.keys()}
@@ -384,6 +395,7 @@ class BiLSTM:
 
         for epoch in range(epochs):
             sys.stdout.flush()
+            self.time_cost(t0, time.time(), log=True)
             logging.info("\n--------- Epoch %d -----------" % (epoch + 1))
 
             start_time = time.time()

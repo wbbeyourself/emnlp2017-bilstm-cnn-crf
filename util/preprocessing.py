@@ -140,7 +140,9 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
 
     embeddingsDimension = None
 
+    line_count = 0
     for line in embeddingsIn:
+        line_count += 1
         if len(line.split()) <= 2:
             continue
         split = line.rstrip().split(" ")
@@ -172,9 +174,13 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
                 embeddings.append(vector)
                 word2Idx[word] = len(word2Idx)
 
+    print('line_count of embedding file %s is : %s' % (embeddingsPath, line_count))
+    print('len(embeddings) : %s' % len(embeddings))
+    print('len(word2Idx) : %s' % len(word2Idx))
+
     # Extend embeddings file with new tokens
     def createFD(filename, tokenIndex, fd, word2Idx):
-        for line in open(filename):
+        for line in open(filename, encoding='utf-8'):
             if line.startswith('#'):
                 continue
 
@@ -219,6 +225,7 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
 
 # 在原来的token, label, 基础上又加入拆分后的 characters，针对英文单词，或者其他多字符的word
 # todo: 可以做成拆分词组的
+# 对中文字来说，完全冗余，可以去掉
 def addCharInformation(sentences):
     """Breaks every token into the characters"""
     for sentenceIdx in range(len(sentences)):
@@ -229,7 +236,7 @@ def addCharInformation(sentences):
             sentences[sentenceIdx]['characters'].append(chars)
 
 
-# 加casing, 也能提供额外的信息
+# 加casing, 也能提供额外的信息， 全是other也没什么用
 def addCasingInformation(sentences):
     """Adds information of the casing of words"""
     for sentenceIdx in range(len(sentences)):

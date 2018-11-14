@@ -24,7 +24,6 @@ if not os.path.isfile(inputPath):
 dir_path = os.path.dirname(os.path.abspath(inputPath))
 prefix = os.path.basename(inputPath).split('.')[0]
 predict_type_path = os.path.join(dir_path, prefix + '_predict.txt')
-predict_sentence_type_path = os.path.join(dir_path, prefix + '_predict_with_sentence.txt')
 
 predicted_sentences = []
 predicted_types = []
@@ -59,11 +58,5 @@ print('writing predict_type_path file ...')
 with open(predict_type_path, 'w', encoding='utf-8') as f:
     for line in predicted_types:
         f.write(line + '\n')
-
-print('writing predict_sentence_type_path file ...')
-with open(predict_sentence_type_path, 'w', encoding='utf-8') as f:
-    for i, types in enumerate(predicted_types):
-        f.write(predicted_sentences[i] + '\n')
-        f.write(types + '\n')
 
 print('Compelte!!!')
